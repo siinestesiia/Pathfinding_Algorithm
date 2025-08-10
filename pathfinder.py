@@ -3,28 +3,26 @@ from sys import exit
 
 
 ''' Main class for running the app. '''
-class GameApp():
+class PathfinderApp():
     def __init__(self):
         pygame.init()
         screen_width, screen_height = 1000, 800
         self.screen = pygame.display.set_mode((screen_width, screen_height))
-        pygame.display.set_caption('PathFinder')
+        pygame.display.set_caption('A* PathFinder')
         self.clock = pygame.time.Clock()
         
-        # Node related
+        # Node related ----------------------------------------------------------
         self.node_size = (50, 50)
-        self.node_offset = 5 # Space between nodes.
+        self.node_offset = 5 # Gap between nodes.
+        self.start_node = None
+        self.end_node = None
 
+        self.start_color = (0, 255, 0, 255) # Green color.
+        self.end_color = (255, 0, 0, 255) # Red color.
+        self.walkable_color = (150, 150, 150, 255) # Light grey.
+        self.unwalkable_color = (50, 50, 50, 255) # Dark grey.
 
         self.run_app()
-
-        # # Pathfinding variables --------------------------------------
-        # ''' Cost from starting node to current node (traveled distance) '''
-        # g_cost = 0 
-        # ''' Estimated cost from current node to target node '''
-        # h_cost = 0
-        # ''' total estimated cost of the path '''
-        # f_cost = g_cost + h_cost
 
 
     def run_app(self):
@@ -87,17 +85,35 @@ class GameApp():
     def select_node(self, mouse_pos, mouse_button):
         node = self.get_node_from_pos(mouse_pos)
         
-        # Check if the mouse clicked on node or gap in the grid
+        # Check if the mouse clicked on a node or a gap in the grid
         if node:
             # Left click
-            if mouse_button == 1: 
-                print(f'Left Button pressed at {mouse_pos}!')
-                print(node.node_rect)      
-    
+            if mouse_button == 1:
+                # Set a new start node.
+                if not self.start_node:
+                    self.start_node = node
+                    self.start_node.color = self.start_color
+                # Set new end node but not on the start node.
+                elif not self.end_node and node != self.start_node:
+                    self.end_node = node
+                    self.end_node.color = self.end_color
+                # If both are set, clear them and set a new node
+                else:
+                    if self.start_node:
+                        self.start_node.color = self.walkable_color # Reset color.
+                        self.start_node = None
+                    if self.end_node:
+                        self.end_node.color = self.walkable_color # Reset color.
+                        self.end_node = None
+                    
+                    self.start_node = node
+                    self.start_node.color = self.start_color
+
             # Right click
             elif mouse_button == 3:
-                print(f'Right Button pressed at {mouse_pos}!')
-                node.toggle_walkable()
+                # Only toggle if it's walkable or non-walkable.
+                if node != self.start_node and node != self.end_node:
+                    node.toggle_walkable()
 
 
     def get_node_from_pos(self, mouse_pos):
@@ -133,20 +149,21 @@ class Node():
     def __init__(self, node_size, coordinates, walkable):
         self.walkable = walkable
         self.node_rect = pygame.Rect((coordinates), node_size)
+        self.color = (150, 150, 150, 255) # Set as light grey by default.
 
     def draw_node(self, screen_surf):
-        if self.walkable:
-            node_color = (150, 150, 150, 255) # Light grey.
-        else:
-            node_color = (50, 50, 50, 255) # Dark grey.
-
-        pygame.draw.rect(screen_surf, node_color, self.node_rect)
+        pygame.draw.rect(screen_surf, self.color, self.node_rect)
 
     def toggle_walkable(self):
         self.walkable = not self.walkable
+
+        if self.walkable:
+            self.color = (150, 150, 150, 255)
+        else:
+            self.color = (50, 50, 50, 255)
 
 # ------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
-    game = GameApp()
+    game = PathfinderApp()
