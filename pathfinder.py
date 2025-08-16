@@ -72,12 +72,17 @@ class PathfinderApp():
         rows = (screen_height - offset) // grid_gap_y
 
         ''' Grid generation process '''
+        # pixel_coordinates are for drawing on-screen, and grid_coordinates are
+        # for the logical data.
         for y_index in range(rows):
             row = []
             for x_index in range(cols):
-                node_coordinates = (x_index * grid_gap_x + offset,
+                pixel_coordinates = (x_index * grid_gap_x + offset,
                                     y_index * grid_gap_y + offset)
-                new_node = Node(self.node_size, node_coordinates, True)
+                grid_coordinates = (y_index, x_index)
+
+                new_node = Node(self.node_size, pixel_coordinates,
+                                True, grid_coordinates)
                 row.append(new_node)
 
             self.grid.append(row)
